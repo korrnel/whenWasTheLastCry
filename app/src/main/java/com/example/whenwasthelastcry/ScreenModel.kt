@@ -1,0 +1,55 @@
+package com.example.whenwasthelastcry
+
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
+
+
+class ScreenModel() : ViewModel() {
+
+    val lastCryText = MutableLiveData("")
+    private var lastCry: Long = parseDateToMillis("2024-08-10 17:10:10")
+
+    fun setLastCry(){
+       lastCry= System.currentTimeMillis()
+    }
+
+    init {
+        viewModelScope.launch {
+            while (true) {
+
+
+                val timeDifference: Long = System.currentTimeMillis() - lastCry
+                // Calculate days, hours, minutes, and seconds
+                val days = TimeUnit.MILLISECONDS.toDays(timeDifference)
+                val hours = TimeUnit.MILLISECONDS.toHours(timeDifference) % 24
+                val minutes = TimeUnit.MILLISECONDS.toMinutes(timeDifference) % 60
+                val seconds = TimeUnit.MILLISECONDS.toSeconds(timeDifference) % 60
+
+                // Format the elapsed time
+                lastCryText.postValue(
+                    when {
+                        days > 0 -> "$days nap, $hours óra, $minutes perc, $seconds"
+                        hours > 0 -> "$hours óra, $minutes perc, $seconds"
+                        minutes > 0 -> "$minutes perc, $seconds"
+                        else -> "$seconds"
+                    }
+                 + " másodperc\ntel el az utolsó hiszti óta")
+
+                delay(1000L) // Update every second
+
+            }
+        }
+    }
+}
+// Utility function to parse date string to milliseconds
+private fun parseDateToMillis(dateStr: String): Long {
+    val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    return format.parse(dateStr)?.time ?: 0L
+}
