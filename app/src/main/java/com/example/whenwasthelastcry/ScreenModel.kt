@@ -13,11 +13,32 @@ import java.util.concurrent.TimeUnit
 
 class ScreenModel() : ViewModel() {
 
+    val cryBaby = MutableLiveData("")
+    val confirmationState = MutableLiveData(false)
+    val prevousAttempts = MutableLiveData<List<String>>(emptyList())
     val lastCryText = MutableLiveData("")
     private var lastCry: Long = parseDateToMillis("2024-08-10 17:10:10")
 
+    fun showConfirm(){
+        this.confirmationState.value=true
+    }
     fun setLastCry(){
        lastCry= System.currentTimeMillis()
+       val attempts =  prevousAttempts.value!!.toMutableList()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+        attempts.add(dateFormat.format(Date(lastCry))+ " "+ cryBaby.value)
+        if (attempts.size>6) attempts.removeFirst()
+        prevousAttempts.value=attempts
+        cryBaby.value=""
+    }
+
+    fun hideConfirm() {
+        confirmationState.value=false
+    }
+
+    fun setCryBaby(it: String) {
+       cryBaby.value=it
     }
 
     init {
@@ -40,7 +61,7 @@ class ScreenModel() : ViewModel() {
                         minutes > 0 -> "$minutes perc, $seconds"
                         else -> "$seconds"
                     }
-                 + " másodperc\ntel el az utolsó hiszti óta")
+                 + " másodperc\ntelt el az utolsó hiszti óta!!")
 
                 delay(1000L) // Update every second
 
